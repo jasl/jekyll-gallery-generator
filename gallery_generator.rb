@@ -50,6 +50,7 @@ module Jekyll
       gallery_name = gallery_name.gsub("_", " ").gsub(/\w+/) {|word| word.capitalize}
       self.data["name"] = gallery_name
       self.data["title"] = "#{gallery_title_prefix}#{gallery_name}"
+			self.data["photos"] = {}
       thumbs_dir = "#{site.dest}/#{dir}/thumbs"
 
       FileUtils.mkdir_p(thumbs_dir, :mode => 0755)
@@ -69,6 +70,18 @@ module Jekyll
               puts $!
             end
           end
+					exif = EXIFR::JPEG.new("#{site.dest}/#{dir}/#{image}")
+					if exif.exif?
+						self.data["photos"][image] = {
+							"width" => exif.width,
+							"height" => exif.height,
+						  "model" => exif.model,
+						  "date_time" => exif.date_time.strftime("%Y-%m-%d %H:%M:%S"),
+							"exposure_time" => exif.exposure_time.to_s,
+							"f_number" => exif.f_number.to_f
+						}
+						p self.data["photos"][image]
+					end
         end
       end
       self.data["images"] = @images
